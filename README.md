@@ -48,3 +48,10 @@ Nic dalšího neinstaluje, nic neposílá na internet.
 ## Licence
 
 Kód v tomto repu je pod licencí [MIT](LICENSE). Synergy OCC je dílo P3ty, Jacka Blacka a Swixe a do této licence nespadá.
+
+## Code signing policy
+Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org).
+- Committers and reviewers: [darkner258](https://github.com/darkner258)
+- Approvers: [darkner258](https://github.com/darkner258)
+
+Privacy policy: This program will not transfer any information to other networked systems unless specifically requested by the user or the person installing or operating it.
