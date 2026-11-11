@@ -1,0 +1,57 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install mingw-w64
+        run: sudo apt-get update && sudo apt-get install -y mingw-w64
+
+      - name: Build
+        run: ./build.sh
+
+      - name: Upload unsigned build
+        id: upload-unsigned
+        uses: actions/upload-artifact@v4
+        with:
+          name: SynergyTablet-unsigned
+          path: dist/
+
+      # Podpis pres SignPath Foundation. Zapne se samo, jakmile v repu nastavis
+      # Settings -> Secrets and variables -> Actions:
+      #   secret   SIGNPATH_API_TOKEN
+      #   variable SIGNPATH_ORGANIZATION_ID
+      - name: Sign (SignPath)
+        if: startsWith(github.ref, 'refs/tags/v') && vars.SIGNPATH_ORGANIZATION_ID != ''
+        uses: signpath/github-action-submit-signing-request@v1
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: synergy-occ-tablet
+          signing-policy-slug: release-signing
+          github-artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
+          wait-for-completion: true
+          output-artifact-directory: dist
+
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          VER="${GITHUB_REF_NAME#v}"
+          mkdir -p pkg/SynergyTablet
+          cp dist/SynergyTablet.exe dist/CTI_MNE.txt pkg/SynergyTablet/
+          (cd pkg && zip -r "../SynergyTablet_v${VER}.zip" SynergyTablet)
+          gh release create "$GITHUB_REF_NAME" "SynergyTablet_v${VER}.zip" --title "Synergy OCC Tablet ${VER}" --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}

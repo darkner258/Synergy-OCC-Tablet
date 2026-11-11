@@ -1,0 +1,3 @@
+*.opl  text eol=crlf
+*.txt  text eol=crlf
+*.ico  binary

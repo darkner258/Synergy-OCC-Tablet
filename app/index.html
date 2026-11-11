@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>Synergy OCC</title>
+<style>
+html,body{margin:0;height:100%;background:#000;overflow:hidden;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation;
+  font-family:"Arial Narrow","Roboto Condensed",Arial,sans-serif}
+#wrap{position:absolute;left:50%;top:0;transform-origin:top center}
+#screen{position:relative;width:1000px;height:620px;background:#111 center/100% 100% no-repeat}
+.t{position:absolute;white-space:nowrap;overflow:hidden;color:#000;font-size:24px;line-height:1}
+.w{color:#fff}.g{color:#5a5a5a}.r{color:#ff1e00}.b{font-weight:700}.pr{color:#ff6f66}.nv{color:#000}
+.hs{position:absolute;background:transparent;border:0;padding:0;margin:0;-webkit-tap-highlight-color:transparent}
+.hs.on{background:rgba(255,255,255,.45)}
+body.debug .hs{outline:2px dashed #f0f;background:rgba(255,0,255,.12)}
+body.debug .hs::after{content:attr(data-t);position:absolute;left:2px;top:2px;font:10px monospace;color:#f0f;background:#000a}
+#bezel{display:flex;gap:8px;width:1000px;padding:10px 0;box-sizing:border-box;justify-content:space-between}
+#bezel button{flex:1;height:72px;border:0;border-radius:10px;background:#2c3440;color:#fff;font:600 18px Arial,sans-serif;white-space:pre-line;line-height:1.15;padding:0 2px;
+  -webkit-tap-highlight-color:transparent}
+#bezel button.on{background:#e0a100;color:#000}
+#bezel .esc{background:#ff7a59;color:#000}#bezel .ok{background:#18c418;color:#000}
+
+/* --- panel Hotovost --- */
+#cash{position:absolute;left:0;top:180px;width:1000px;height:440px;background:#1b2028;border-radius:18px 18px 0 0;
+  box-shadow:0 -10px 30px rgba(0,0,0,.6);box-sizing:border-box;padding:14px 20px 16px;display:none;flex-direction:column;gap:12px;
+  font-family:Arial,sans-serif;color:#fff;z-index:5}
+#cash.open{display:flex}
+#cash .hd{display:flex;align-items:center;gap:14px}
+#cash .hd b{font-size:24px}#cash .hd span{font-size:14px;color:#9aa4b5}
+#cash .x{margin-left:auto;width:48px;height:48px;border:0;border-radius:12px;background:#2c3440;color:#fff;font-size:22px}
+#cash .cols{display:flex;gap:16px;flex:1;min-height:0}
+#cash .lab{font-size:12px;color:#9aa4b5;text-transform:uppercase;letter-spacing:.06em}
+#cash .box{background:#252b35;border-radius:14px;padding:12px 16px;display:flex;flex-direction:column;gap:2px}
+#cash .price{font-size:40px;font-weight:700;color:#ff5a3c}
+#cash .given{background:#13351f;border:2px solid #1fbf4a}
+#cash .given .lab{color:#8fe0a6}#cash .given .sum{font-size:38px;font-weight:700}#cash .given .det{font-size:14px;color:#8fe0a6;min-height:17px}
+#cash .note{font-size:13px;line-height:1.45;color:#8a94a5}
+#cash .coins{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+#cash .coin{position:relative;height:96px;border:2px solid transparent;border-radius:14px;background:#252b35;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
+#cash .coin.used{border-color:#1fbf4a;background:#1e2a24}
+#cash .coin.on{background:#3a4352}
+#cash .c{border-radius:50%;display:flex;align-items:center;justify-content:center;font:700 24px Arial,sans-serif}
+#cash .steel{background:radial-gradient(circle at 35% 30%,#f2f4f7,#a9b0ba 70%,#868d97);box-shadow:inset 0 0 0 4px #c3c8cf;color:#1b2028}
+#cash .copper{background:radial-gradient(circle at 35% 30%,#f3c4a0,#c47a46 70%,#9a5a2e);box-shadow:inset 0 0 0 4px #d89569;color:#2a1406}
+#cash .brass{background:radial-gradient(circle at 35% 30%,#fff0b0,#d6a92e 70%,#a77f17);box-shadow:inset 0 0 0 4px #e6c25a;color:#2a1e02}
+#cash .bi{background:radial-gradient(circle at 35% 30%,#fff0b0,#d6a92e 70%,#a77f17)}
+#cash .bi i{width:62%;height:62%;border-radius:50%;background:radial-gradient(circle at 35% 30%,#f2f4f7,#a9b0ba 75%);display:flex;align-items:center;justify-content:center;font-style:normal;color:#1b2028}
+#cash .bill{width:170px;height:52px;border-radius:6px;background:linear-gradient(135deg,#b7c79a,#7f9a5f);box-shadow:inset 0 0 0 3px #d4e0bd;
+  display:flex;align-items:center;justify-content:space-between;padding:0 14px;box-sizing:border-box;color:#1d2a10;font:700 22px Arial,sans-serif}
+#cash .bill small{font-size:14px}
+#cash .cnt{position:absolute;right:8px;top:6px;min-width:28px;height:28px;border-radius:14px;background:#1fbf4a;color:#04140a;font:700 15px Arial,sans-serif;display:none;align-items:center;justify-content:center;padding:0 4px;box-sizing:border-box}
+#cash .used .cnt{display:flex}
+#cash .act{border:0;border-radius:14px;color:#fff;background:#2c3440;font:600 18px Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+#cash .act.take{flex:1;background:#1fbf4a;color:#04140a;font-size:24px;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+#cash .act.take small{font-size:14px;color:#0b3d1a}
+#cash .act.on{filter:brightness(1.25)}
+#bezel .cashbtn{background:#1f6b3a}
+#cashBills .coin{height:72px;width:100%}
+#status{position:fixed;right:10px;bottom:6px;font:12px Arial;color:#888}
+#credit{position:fixed;left:10px;bottom:6px;font:12px Arial;color:#666;pointer-events:none}
+#status.bad{color:#ff5a5a}
+#dbg{display:none;position:fixed;left:0;bottom:0;max-height:40%;overflow:auto;width:100%;background:#000d;color:#0f0;font:11px monospace;white-space:pre}
+body.debug #dbg{display:block}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="screen"></div>
+  <div id="bezel"></div>
+  <div id="cash" role="dialog" aria-label="Hotovost">
+    <div class="hd"><b>Hotovost</b><span id="cashTicket"></span>
+      <button class="x" id="cashClose" aria-label="Zavřít panel"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></button></div>
+    <div class="cols">
+      <div style="width:260px;display:flex;flex-direction:column;gap:12px">
+        <div class="box"><div class="lab">K platbě</div><div class="price" id="cashPrice">–</div></div>
+        <div class="box given"><div class="lab">Vydáno</div><div class="sum" id="cashSum">0 Kč</div><div class="det" id="cashDet"></div></div>
+        <div class="note">Kolik cestující dal, vidíš ve hře na misce. Tablet sčítá, co už jsi vydal.</div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:10px">
+        <div class="lab">Vydat z kasy</div>
+        <div class="coins" id="cashCoins"></div>
+        <div id="cashBills"></div>
+      </div>
+      <div style="width:210px;display:flex;flex-direction:column;gap:12px">
+        <button class="act take" id="cashTake">Vzít drobné<small>Shift+T</small></button>
+        <button class="act" id="cashReset" style="height:60px">Vynulovat počítadlo</button>
+        <div class="note">Každé ťuknutí na minci = jedna mince z kasy ve hře.</div>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="status">…</div>
+<div id="credit">Synergy OCC Tablet by Arteyo258 · se svolením P3ta</div>
+<div id="dbg"></div>
+<script>
+// Souradnice jsou v pixelech textury obrazovky (1000 x 620).
+const ROW = (k) => [2, 30 + 34.8 * k, 716, 34.8];   // radek seznamu (turnusy, spoje, cile)
+const nav = (s) => s.v.navigator_menu_visible;
+const kb  = (s) => s.v.klavesnice_vis === 1;
+const in_ = (...a) => (s) => a.includes(nav(s));
+
+// [trigger, [x,y,w,h], podminka]
+const HOT = [
+  // numericka klavesnice vpravo
+  ['displej_tl_7',[730,5,78,86],kb],['displej_tl_8',[813,5,78,86],kb],['displej_tl_9',[896,5,78,86],kb],
+  ['displej_tl_4',[730,96,78,86],kb],['displej_tl_5',[813,96,78,86],kb],['displej_tl_6',[896,96,78,86],kb],
+  ['displej_tl_1',[730,186,78,86],kb],['displej_tl_2',[813,186,78,86],kb],['displej_tl_3',[896,186,78,86],kb],
+  ['displej_tl_0',[813,276,78,86],kb],
+  ['displej_tl_backspace',[730,366,78,86],kb],
+  ['displej_tl_esc',[730,458,78,130],kb],['displej_tl_enter',[813,458,162,130],kb],
+
+  // jizda / prodej
+  ['ticketprinter_button_ticket_0',[3,30,104,76],in_(0)],   // Prest.
+  ['ticketprinter_button_ticket_1',[3,110,104,76],in_(0)],  // Neprest.
+  ['ticketprinter_button_ticket_2',[3,190,104,76],in_(0)],  // Denni
+  ['ticketprinter_button_karta',[619,190,102,76],in_(0)],
+  ['ticketprinter_button_dummy_0',[3,430,142,66],in_(0)],   // zakladni
+  ['ticketprinter_button_ticket_3',[147,430,142,66],in_(0)],// dite
+  ['ticketprinter_button_ticket_4',[291,498,142,66],in_(0)],// student
+  ['ticketprinter_button_dummy_1',[579,430,142,66],in_(0)], // osoba 65
+  ['ticketprinter_button_karta_pk',[434,548,144,66],in_(9,10)], // EMV
+  ['ticketprinter_button_karta_ep',[578,548,142,66],in_(9,10)], // EP
+
+  // zalozky menu (horni radek y=58, dolni y=104)
+  ['occ_menu_zarizeni',[4,58,182,44],in_(1,51)],['occ_menu_nastaveni',[366,58,174,44],in_(1,51)],
+  ['occ_menu_jizda',[4,104,172,44],in_(51)],
+  ['occ_menu_is',[352,104,200,44],in_(1)],
+  ['occ_menu_jizda',[4,58,172,44],in_(32,54)],['occ_menu_is',[352,58,200,44],in_(32,54)],
+  ['occ_menu_nastaveni',[366,104,174,44],in_(32)],['occ_menu_zarizeni',[4,104,182,44],in_(54)],
+
+  // menu Jizda (1)
+  ['displej_tl_turnus',[10,160,370,60],in_(1)],['displej_tl_linkospoj',[10,228,370,60],in_(1)],
+  ['occ_odpocet_on_off',[386,160,328,60],in_(1)],['IBIS_logout',[386,508,328,60],in_(1)],
+  // menu Zarizeni (32)
+  ['displej_tl_sporic',[366,160,348,60],in_(32)],['occ_f_klavesy',[366,368,348,60],in_(32)],['occ_vypnuti',[366,508,348,60],in_(32)],
+  // menu Inf. system (51)
+  ['occ_sluzebni_zpravy',[366,158,348,62],in_(51)],['occ_smazani',[366,510,348,58],in_(51)],
+  // menu Nastaveni (54)
+  ['displej_prepinani_tl',[10,370,350,60],in_(54)],
+  // GPS / automaticke hlaseni
+  ['set_aut_hlaseni_off',ROW(0),in_(56)],['set_aut_hlaseni_on',ROW(1),in_(55)],
+  // rucni zadani (34)
+  ['select_linka',[366,160,348,62],in_(34)],['select_spoj',[366,230,348,62],in_(34)],['select_cil',[366,300,348,62],in_(34)],
+  // cinnosti (57)
+  ['displej_predchozi_cinnost',[6,502,138,62],in_(57)],['displej_nasledujici_cinnost',[580,502,136,62],in_(57)],
+  // sluzebni zpravy - rolovaci lista
+  ['occ_sluzebni_cile1',[680,30,40,280],in_(52,53)],['occ_sluzebni_cile2',[680,310,40,280],in_(52,53)],
+  // uzavreni odpoctu (97), sporic (5), prihlaseni (4)
+  ['uzavreni_odpoctu',[24,50,338,90],in_(97)],
+  ['IBIS_sporic_off',[0,0,1000,620],in_(5)],
+  ['IBIS_login_pin',[300,214,210,40],in_(4)],
+];
+for (let k = 0; k < 17; k++) {
+  HOT.push([`select_turnus${k}`, ROW(k), (s) => s.v.occ_turnus_select === 1]);
+  HOT.push([`select_cil${k}`, ROW(k), (s) => s.v.occ_cil_select === 1]);
+  HOT.push([`select_spoj${k}`, ROW(k), (s) => s.v[`occ_linkospoj_row${k}`] === 1]);
+}
+for (let k = 0; k <= 10; k++)
+  HOT.push([`occ_sporic_mode${k}`, [18 + 64 * k, 400, 64, 170], (s) => s.v.occ_sporic_menu_tl_vis === 1]);
+
+// Fyzicka tlacitka kolem displeje
+const BEZEL = [
+  ['Vpřed','synergy_tl_vpred'],['Vzad','synergy_tl_zpet'],
+  ['F1','synergy_tl_f1'],['F4','synergy_tl_f4'],['F5','synergy_tl_f5'],['Menu','synergy_tl_menu'],
+  ['▲▲','sipka_nahoru2'],['▼▼','sipka_dolu2'],['▲','sipka_nahoru'],['▼','sipka_dolu'],
+  ['Vzít\nlístek','ticketprinter_getticket'],['Vzít\ndrobné','key_shift_t'],
+  ['Hotovost','__cash','cashbtn'],
+];
+
+// Texty z promennych: [promenna, [x,y,w,h], velikost, zarovnani, podminka, trida]
+const lines = (txt) => (txt || '').split('@');
+const TXT = [
+  ['occ_datum',[248,20,130,34],25,'left',in_(1,32,51,54),'w b'],['occ_cas',[388,20,130,34],26,'left',in_(1,32,51,54),'w b'],   // menu: datum nad zalozkou Info, cas nad Nastaveni
+  ['kasa_id',[312,226,184,24],22,'left',in_(3,4,96)],['kasa_pin',[312,292,184,24],22,'left',in_(3,4,96)],
+  ['manual_linka_str',[372,174,336,34],26,'center',in_(34)],
+  ['manual_spoj_str',[372,244,336,34],26,'center',in_(34)],
+  ['manual_cil_str',[372,314,336,34],26,'center',in_(34)],
+  // menu Jizda: hodnoty pod tlacitky + stav odpoctu dole
+  ['IBIS_turnus_str',[10,190,370,28],22,'center',in_(1),'nv'],
+  ['occ_linkospoj',[10,258,370,28],22,'center',in_(1),'nv'],
+  ['first_stop',[10,327,370,28],22,'center',in_(1),'nv'],
+  ['occ_odpocet_text',[0,592,720,26],20,'center',in_(1,32,51,54),'w'],
+  ['kasa_cena',[112,334,500,46],40,'center',in_(0),'pr b'],
+  // cekani na platbu kartou (9 = EMV, 10 = EP)
+  ['kasa_cena',[356,312,240,30],26,'left',in_(9,10)],
+  // tisk jizdenky (11, 98)
+  ['occ_print_text',[20,322,680,34],26,'center',in_(11,98)],
+  ['druh_listku',[20,362,680,32],24,'center',in_(11)],
+  ['kasa_cena',[20,400,680,34],28,'center',in_(11)],
+  ['zona_final',[118,387,300,34],28,'left',in_(0)],
+  ['stops_min',[400,387,208,34],28,'right',in_(0)],
+];
+for (let k = 0; k < 7; k++) {
+  const y = 79 + 36.5 * k, show = in_(0);
+  TXT.push([k ? `JKZ_Odchylka${k}` : 'JKZ_Odchylka',[117,y,60,34],22,'left',show,k < 2 ? '' : 'g']);   // cas dle JR (seda mimo aktualni radky)
+  TXT.push([`stop${k}_cislo`,[188,y,36,34],22,'right',show,'g']);
+  TXT.push([`Synergy_stop${k + 1}`,[230,y,385,34],27,'left',show]);
+}
+// horni radek jizdy: datum, odchylka, cas, linkospoj
+TXT.push(['occ_datum',[166,11,126,34],32,'left',in_(0),'w']);
+TXT.push(['pocet_cestujicich_str',[118,52,30,22],18,'right',in_(0),'w b']);   // pocet cestujicich za panackem
+TXT.push(['occ_cas',[448,11,126,34],32,'left',in_(0),'w']);
+TXT.push(['occ_linkospoj',[540,4,178,24],21,'right',in_(0),'w b']);   // linkospoj vpravo nahore
+
+// Android / prohlizec: prvni dotyk prepne na celou obrazovku (iPad aplikace z plochy uz je fullscreen)
+function goFull() {
+  if (navigator.standalone || matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches) return;
+  if (document.fullscreenElement || document.webkitFullscreenElement) return;
+  const el = document.documentElement;
+  const req = el.requestFullscreen || el.webkitRequestFullscreen;
+  if (!req) return;
+  const p = req.call(el, {navigationUI: 'hide'});
+  const lock = () => { try { screen.orientation.lock('landscape').catch(() => {}); } catch (e) {} };
+  if (p && p.then) p.then(lock).catch(() => {}); else lock();
+}
+document.addEventListener('pointerdown', goFull, true);
+
+const scr = document.getElementById('screen'), bez = document.getElementById('bezel');
+const stat = document.getElementById('status'), dbg = document.getElementById('dbg');
+if (location.search.includes('debug')) document.body.classList.add('debug');
+
+function fit() {
+  const w = document.getElementById('wrap');
+  const sc = Math.min(innerWidth / 1000, innerHeight / (620 + 108));
+  w.style.transform = `translateX(-50%) scale(${sc})`;
+}
+addEventListener('resize', fit); fit();
+
+function press(t, el) {
+  fetch('/press', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({t})});
+  if (el) { el.classList.add('on'); setTimeout(() => el.classList.remove('on'), 150); }
+}
+function tapHandler(el, t) {
+  el.addEventListener('pointerdown', (e) => { e.preventDefault(); press(t, el); });
+}
+
+for (const [label, t, cls] of BEZEL) {
+  const b = document.createElement('button'); b.textContent = label; if (cls) b.className = cls;
+  if (t === '__cash') b.addEventListener('pointerdown', (e) => { e.preventDefault(); toggleCash(); });
+  else tapHandler(b, t);
+  bez.appendChild(b);
+}
+
+
+// --- Hotovost --------------------------------------------------------------
+// poradi minci v kase OMSI (penezni system Kc): 1, 2, 5, 10, 20, 50, 100 Kc
+const COINS = [
+  {v:1,  t:'cashdesk_changer_0_05', cls:'steel',  d:66},
+  {v:2,  t:'cashdesk_changer_0_10', cls:'steel',  d:70},
+  {v:5,  t:'cashdesk_changer_0_50', cls:'steel',  d:74},
+  {v:10, t:'cashdesk_changer_1_00', cls:'copper', d:72},
+  {v:20, t:'cashdesk_changer_2_00', cls:'brass',  d:76},
+  {v:50, t:'cashdesk_changer_5_00', cls:'bi',     d:80},
+  {v:100,t:'cashdesk_changer_8_00', cls:'bill'},
+];
+const cash = document.getElementById('cash');
+const given = {};
+function cashUpdate() {
+  let sum = 0; const parts = [];
+  for (const c of [...COINS].reverse()) { const n = given[c.v] || 0; if (n) { sum += n * c.v; parts.push(n > 1 ? `${n}× ${c.v}` : `${c.v}`); } }
+  document.getElementById('cashSum').textContent = `${sum} Kč`;
+  document.getElementById('cashDet').textContent = parts.length ? parts.join(' + ') + ' Kč' : '';
+  for (const c of COINS) {
+    const el = document.getElementById('coin' + c.v), n = given[c.v] || 0;
+    el.classList.toggle('used', n > 0); el.querySelector('.cnt').textContent = '×' + n;
+  }
+}
+function cashReset() { for (const k in given) delete given[k]; cashUpdate(); }
+function toggleCash() { cash.classList.toggle('open'); }
+for (const c of COINS) {
+  const b = document.createElement('button'); b.className = 'coin'; b.id = 'coin' + c.v; b.setAttribute('aria-label', c.v + ' Kč');
+  b.innerHTML = c.cls === 'bill'
+    ? `<span class="bill">${c.v}<small>Kč</small></span><span class="cnt"></span>`
+    : c.cls === 'bi'
+      ? `<span class="c bi" style="width:${c.d}px;height:${c.d}px"><i>${c.v}</i></span><span class="cnt"></span>`
+      : `<span class="c ${c.cls}" style="width:${c.d}px;height:${c.d}px">${c.v}</span><span class="cnt"></span>`;
+  b.addEventListener('pointerdown', (e) => { e.preventDefault(); press(c.t, b); given[c.v] = (given[c.v] || 0) + 1; cashUpdate(); });
+  document.getElementById(c.cls === 'bill' ? 'cashBills' : 'cashCoins').appendChild(b);
+}
+document.getElementById('cashClose').addEventListener('pointerdown', (e) => { e.preventDefault(); cash.classList.remove('open'); });
+document.getElementById('cashReset').addEventListener('pointerdown', (e) => { e.preventDefault(); cashReset(); });
+const takeBtn = document.getElementById('cashTake');
+takeBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); press('key_shift_t', takeBtn); cashReset(); });
+cashUpdate();
+// cestujici si vzal listek: GivenTicket prejde z >= 0 (listek lezi na pultu) na -1 -> nova platba
+let lastGiven = null;
+function cashState(s) {
+  const g = s.v.GivenTicket;
+  if (typeof g === 'number') {
+    if (lastGiven !== null && lastGiven >= 0 && g < 0) cashReset();
+    lastGiven = g;
+  }
+  document.getElementById('cashPrice').textContent = s.s.kasa_cena || '–';
+  document.getElementById('cashTicket').textContent = s.s.druh_listku || '';
+}
+
+
+// segmentove hodiny jako SVG (jednotky = pixely textury kasy)
+const SEG7 = {'0':'abcdef','1':'bc','2':'abdeg','3':'abcdg','4':'bcfg','5':'acdfg','6':'acdefg','7':'abc','8':'abcdefg','9':'abcdfg','-':'g'};
+function segClock(txt, col) {
+  const H = 176, W = 74, T = 19, G = 3, h = H / 2;
+  const hs = (x, y, l) => [[x+G,y],[x+T/2+G,y-T/2],[x+l-T/2-G,y-T/2],[x+l-G,y],[x+l-T/2-G,y+T/2],[x+T/2+G,y+T/2]];
+  const vs = (x, y, l) => [[x,y+G],[x+T/2,y+T/2+G],[x+T/2,y+l-T/2-G],[x,y+l-G],[x-T/2,y+l-T/2-G],[x-T/2,y+T/2+G]];
+  const poly = (p) => `<polygon points="${p.map(q => q.join(',')).join(' ')}" fill="${col}"/>`;
+  const digit = (ch, ox) => {
+    const segs = {a:hs(ox,0,W), g:hs(ox,h,W), d:hs(ox,H,W), f:vs(ox,0,h), b:vs(ox+W,0,h), e:vs(ox,h,h), c:vs(ox+W,h,h)};
+    return (SEG7[ch] || '').split('').map(k => poly(segs[k])).join('');
+  };
+  const colon = (cx) => `<rect x="${cx-8}" y="${H*0.32-8}" width="16" height="16" fill="${col}"/><rect x="${cx-8}" y="${H*0.72-8}" width="16" height="16" fill="${col}"/>`;
+  const d = (txt.match(/\d/g) || []).slice(0, 6);
+  while (d.length < 6) d.unshift(' ');
+  const cells = [0, 104, 304, 408, 608, 712];
+  let out = cells.map((c, i) => digit(d[i], c + 10)).join('') + colon(249) + colon(553);
+  return `<svg width="800" height="200" viewBox="-8 -10 816 196" aria-hidden="true">${out}</svg>`;
+}
+
+let lastKey = '';
+function render(s) {
+  const key = JSON.stringify([s.v, s.s]);
+  if (key === lastKey) return;
+  lastKey = key;
+  if (s.s.menu_texture) scr.style.backgroundImage = `url("/tex?p=${encodeURIComponent(s.s.menu_texture)}")`;
+  scr.textContent = '';
+
+  for (const [v, r, size, align, cond, cls] of TXT) {
+    if (cond && !cond(s)) continue;
+    const d = document.createElement('div'); d.className = 't' + (cls ? ' ' + cls : '');
+    Object.assign(d.style, {left:r[0]+'px', top:r[1]+'px', width:r[2]+'px', height:r[3]+'px', fontSize:size+'px', textAlign:align, lineHeight:r[3]+'px'});
+    d.textContent = s.s[v] || ''; scr.appendChild(d);
+  }
+  // zvoleny druh a kategorie jizdenky = zluta tlacitka (vyrez z occ_main2.png)
+  if (nav(s) === 0) {
+    const hi = (r) => {
+      const d = document.createElement('div');
+      const url = `/tex?p=${encodeURIComponent((s.s.menu_texture || '').replace(/occ_main(_last)?\.png$/i, 'occ_main2.png'))}`;
+      Object.assign(d.style, {position:'absolute', left:r[0]+'px', top:r[1]+'px', width:r[2]+'px', height:r[3]+'px',
+        backgroundImage:`url("${url}")`, backgroundSize:'1000px 620px', backgroundPosition:`-${r[0]}px -${r[1]}px`});
+      scr.appendChild(d);
+    };
+    const TYPE = {1:[3,30,104,76], 2:[3,110,104,76], 3:[3,190,104,76]};
+    const KIND = {1:[3,430,142,66], 2:[147,430,142,66], 3:[579,430,142,66], 4:[291,498,142,66]};
+    if (TYPE[s.v.ticketprinter_ticket_type_vis]) hi(TYPE[s.v.ticketprinter_ticket_type_vis]);
+    if (KIND[s.v.ticketprinter_ticket_kind_vis]) hi(KIND[s.v.ticketprinter_ticket_kind_vis]);
+  }
+  // rucni volba linkospoje: zvolene pole zlute (vyrez z occ_manual_2.png)
+  if (nav(s) === 34) {
+    const MAN = [[366,160,348,62],[366,230,348,62],[366,300,348,62]];
+    const r = MAN[s.v.occ_manual_select];
+    if (r) {
+      const d = document.createElement('div');
+      const url = `/tex?p=${encodeURIComponent((s.s.menu_texture || '').replace(/occ_manual\.png$/i, 'occ_manual_2.png'))}`;
+      Object.assign(d.style, {position:'absolute', left:r[0]+'px', top:r[1]+'px', width:r[2]+'px', height:r[3]+'px',
+        backgroundImage:`url("${url}")`, backgroundSize:'1000px 620px', backgroundPosition:`-${r[0]}px -${r[1]}px`});
+      scr.insertBefore(d, scr.firstChild);
+    }
+  }
+  // jizda: odchylka oproti JR v barevnem boxu + cervene ctverecky "na znameni"
+  if (nav(s) === 0) {
+    const od = s.v.IBIS_odpocet;
+    if (od >= 0) {
+      const col = ['#ff2712','#00c000','#ffff00','#ffb600','#ffffff'][Math.floor(od / 2)] || '#ffffff';
+      const d = document.createElement('div'); d.className = 't';
+      Object.assign(d.style, {left:'298px', top:'7px', width:'135px', height:'42px', lineHeight:'42px', fontSize:'34px', background:col, textAlign:'center',
+        color:(od < 2 || (od >= 6 && od < 8)) ? '#ffffff' : '#000000'});
+      d.textContent = `${s.s.Kasa_od_text || ''}${s.s.Kasa_od || ''}  ${s.s.Kasa_od_units || ''}`;
+      scr.appendChild(d);
+    }
+    for (let k = 0; k < 7; k++) if ((s.s[`stop${k}_x`] || '').trim()) {
+      const d = document.createElement('div');
+      Object.assign(d.style, {position:'absolute', left:'180px', top:(77 + 36.6 * k + 6)+'px', width:'8px', height:'8px', background:'#e00000'});
+      scr.appendChild(d);
+    }
+  }
+  // seznamy (radky oddelene @)
+  const n = nav(s);
+  let list = null;
+  if ([30,33,35].includes(n)) list = s.s.occ_turnusy_tab;
+  else if (n === 31) list = s.s.occ_linkospoj_tab;
+  else if (n === 52 || n === 53) list = s.s.occ_sluzebni_cile_tab;
+  // cerveny pruh vybraneho radku
+  const sel = [30,33,35].includes(n) ? s.v.occ_preselected_turnus_vis : (n === 31 ? s.v.occ_preselected_linkospoj_vis : -1);
+  if (list != null && sel >= 0 && sel <= 16) {
+    const r = ROW(sel), d = document.createElement('div');
+    Object.assign(d.style, {position:'absolute', left:r[0]+'px', top:r[1]+'px', width:r[2]+'px', height:r[3]+'px', background:'#e8604a'});
+    scr.appendChild(d);
+  }
+  if (list != null) lines(list).forEach((txt, k) => {
+    const r = ROW(k), d = document.createElement('div'); d.className = 't';
+    Object.assign(d.style, {left:(r[0]+8)+'px', top:r[1]+'px', width:(r[2]-16)+'px', height:r[3]+'px', lineHeight:r[3]+'px', fontSize:'26px'});
+    d.textContent = txt; scr.appendChild(d);
+  });
+  if (n === 31 && s.s.IBIS_turnus_str_full) {
+    const d = document.createElement('div'); d.className = 't w';
+    Object.assign(d.style, {left:'4px', top:'2px', width:'710px', height:'26px', fontSize:'22px'});
+    d.textContent = s.s.IBIS_turnus_str_full; scr.appendChild(d);
+  }
+  if (n === 57) lines(s.s.occ_cinnost_tab).forEach((txt, k) => {
+    const d = document.createElement('div'); d.className = 't w';
+    Object.assign(d.style, {left:'368px', top:(207 + 32 * k)+'px', width:'330px', height:'30px', lineHeight:'30px', fontSize:'22px'});
+    d.textContent = txt; scr.appendChild(d);
+  });
+  if (n === 5) {
+    // sporic podle skutecne kasy: odchylka, pocet cestujicich, datum, velke segmentove hodiny, pristi zastavka
+    const grey = '#c4c4c4';
+    const add = (txt, st) => { const d = document.createElement('div'); d.className = 't'; Object.assign(d.style, st); d.textContent = txt || ''; scr.appendChild(d); return d; };
+    const od = s.v.IBIS_odpocet;
+    const odCol = ['#ff2712','#00f700','#ffff00','#ffb600','#ffffff'][Math.floor(od / 2)] || '#ffffff';
+    add(s.s.IBIS_sporic_odchylka, {left:'141px', top:'60px', width:'300px', height:'56px', lineHeight:'56px', fontSize:'47px', color:odCol});
+    add(s.s.pocet_cestujicich_str, {left:'432px', top:'58px', width:'30px', height:'24px', lineHeight:'24px', fontSize:'20px', textAlign:'right', color:'#ffffff'});
+    add(s.s.IBIS_sporic_datum, {left:'614px', top:'72px', width:'300px', height:'60px', lineHeight:'60px', fontSize:'51px', textAlign:'right', color:grey});
+    const clock = document.createElement('div');
+    Object.assign(clock.style, {position:'absolute', left:'100px', top:'203px', width:'800px', height:'200px'});
+    clock.innerHTML = segClock(s.s.occ_cas || '', grey);
+    scr.appendChild(clock);
+    const st = add('', {left:'137px', top:'462px', width:'860px', height:'70px', lineHeight:'70px', fontSize:'56px', color:grey});
+    const t1 = document.createElement('b'); t1.style.fontWeight = '600'; t1.textContent = s.s.IBIS_sporic_stop_cas || '';
+    const t2 = document.createElement('span'); t2.style.marginLeft = '34px'; t2.textContent = s.s.IBIS_sporic_stop || '';
+    st.append(t1, t2);
+  }
+
+  for (const [t, r, cond] of HOT) {
+    if (!cond(s)) continue;
+    const b = document.createElement('button'); b.className = 'hs'; b.dataset.t = t; b.setAttribute('aria-label', t);
+    Object.assign(b.style, {left:r[0]+'px', top:r[1]+'px', width:r[2]+'px', height:r[3]+'px'});
+    tapHandler(b, t); scr.appendChild(b);
+  }
+  if (document.body.classList.contains('debug')) dbg.textContent = JSON.stringify(s, null, 1);
+}
+
+async function poll() {
+  try {
+    const s = await (await fetch('/state', {cache:'no-store'})).json();
+    const ok = s.age != null && s.age < 2;
+    stat.textContent = ok ? `obrazovka ${nav(s)}` : 'OMSI neposílá data (plugin?)';
+    stat.className = ok ? '' : 'bad';
+    if (s.v && s.s) { render(s); cashState(s); }
+  } catch (e) { stat.textContent = 'PC server nedostupný'; stat.className = 'bad'; }
+  setTimeout(poll, 120);
+}
+poll();
+</script>
+</body>
+</html>

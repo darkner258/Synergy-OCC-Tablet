@@ -1,0 +1,45 @@
+SYNERGY OCC TABLET  v1.3
+========================
+Ovládání kasy Synergy OCC (OMSI 2) z tabletu nebo telefonu přes prohlížeč.
+Synergy OCC: P3ta, Jack Black z Megaknih, Swix. Tablet: Arteyo258, se svolením P3ta.
+
+INSTALACE
+1. Spusť SynergyTablet.exe (nic dalšího instalovat nemusíš).
+2. Aplikace sama najde OMSI 2 ve Steamu. Když ne, klikni „Změnit…“ a vyber složku s Omsi.exe.
+3. Na dotaz „Nainstalovat plugin?“ dej Ano (Windows se zeptá na práva správce).
+   Plugin se kopíruje do OMSI 2\plugins.
+4. Na tabletu (stejná Wi-Fi) otevři adresu z okna aplikace nebo naskenuj QR kód.
+   - Adresa nefunguje? V poli „Síť“ zkus jinou (VPN a virtuální sítě mají vlastní adresy).
+   - Pořád nic? Klikni „Povolit ve firewallu“.
+   iPad: Sdílet -> Přidat na plochu = aplikace přes celou obrazovku.
+   Android: první dotyk na obrazovku přepne Chrome na celou obrazovku.
+5. Spusť OMSI 2, sedni do vozu se Synergy OCC a zapni kasu.
+
+AKTUALIZACE
+- Zavři OMSI a starou aplikaci, spusť novou a potvrď aktualizaci pluginu.
+  Pak spusť OMSI (plugin se načítá jen při startu hry).
+
+ANTIVIRUS (falešný poplach)
+Exe není digitálně podepsané, takže ho některé antiviry hlásí jako podezřelé.
+- Windows Defender: Zabezpečení Windows -> Ochrana před viry a hrozbami ->
+  Historie ochrany -> záznam se SynergyTablet -> Akce -> Povolit na zařízení.
+- Avast: Ochrana -> Karanténa -> Obnovit a přidat výjimku; případně
+  Nastavení -> Obecné -> Výjimky (přidej složku aplikace a OMSI 2\plugins).
+
+openOMSI
+- Potřebuješ openOMSI 0.3.45 nebo novější.
+- Ve složce openOMSI musí být omsi-plugin-host32.exe (bez něj se nenačte žádný
+  32bitový plugin). Pokud chybí, smazal ho nejspíš antivirus.
+- Plugin dej jen do OMSI 2\plugins, ne do plugins ve složce openOMSI.
+- Aplikace čte log openOMSI a případné problémy ukáže červeně ve svém okně.
+
+POZNÁMKY
+- Aplikace musí běžet po celou dobu hraní. Zavřením okna se server vypne.
+- Po aktualizaci pluginu restartuj OMSI (plugin se načítá jen při startu hry).
+- „Vzít drobné“ posílá Shift+T do aktivního okna - OMSI musí být v popředí.
+- Barva odchylky čte proměnnou autobusu IBIS_odpocet; u vozů bez ní se odchylka neukáže.
+- Nastavení: %APPDATA%\SynergyTablet\config.ini (omsi_dir, ip, port - výchozí 8765).
+- Odinstalace: smaž SynergyTablet.exe, OMSI 2\plugins\SynergyBridge.dll a .opl,
+  složku %APPDATA%\SynergyTablet a případně pravidlo „Synergy OCC Tablet“ ve firewallu.
+
+Používá QR Code generator library (c) Project Nayuki, licence MIT.
