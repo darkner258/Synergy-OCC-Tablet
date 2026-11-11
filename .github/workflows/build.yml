@@ -52,6 +52,9 @@ jobs:
           mkdir -p pkg/SynergyTablet
           cp dist/SynergyTablet.exe dist/CTI_MNE.txt pkg/SynergyTablet/
           (cd pkg && zip -r "../SynergyTablet_v${VER}.zip" SynergyTablet)
-          gh release create "$GITHUB_REF_NAME" "SynergyTablet_v${VER}.zip" --title "Synergy OCC Tablet ${VER}" --generate-notes
+          # release mohl vzniknout uz rucne na GitHubu (tim se vytvori i tag) - pak jen nahrajeme zip
+          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 || \
+            gh release create "$GITHUB_REF_NAME" --title "Synergy OCC Tablet ${VER}" --generate-notes
+          gh release upload "$GITHUB_REF_NAME" "SynergyTablet_v${VER}.zip" --clobber
         env:
           GH_TOKEN: ${{ github.token }}
