@@ -19,21 +19,23 @@ jobs:
       - name: Install mingw-w64
         run: sudo apt-get update && sudo apt-get install -y mingw-w64
 
-      - name: Build
-        run: ./build.sh
-
-      - name: Upload unsigned build
-        id: upload-unsigned
-        uses: actions/upload-artifact@v4
-        with:
-          name: SynergyTablet-unsigned
-          path: dist/
-
-      # Podpis pres SignPath Foundation. Zapne se samo, jakmile v repu nastavis
+      # Podpis pres SignPath Foundation. Zapne se samo (jen pro tagy v*), jakmile v repu nastavis
       # Settings -> Secrets and variables -> Actions:
       #   secret   SIGNPATH_API_TOKEN
       #   variable SIGNPATH_ORGANIZATION_ID
-      - name: Sign (SignPath)
+      # V SignPath projektu synergy-occ-tablet musi byt artifact configurations "plugin" a "app"
+      # a signing policy "release-signing". Nejdriv se podepise plugin, pak se teprve vlozi do exe.
+      - name: Build plugin
+        run: ./build.sh plugin
+
+      - name: Upload unsigned plugin
+        id: upload-plugin
+        uses: actions/upload-artifact@v4
+        with:
+          name: SynergyBridge-unsigned
+          path: plugin/SynergyBridge.dll
+
+      - name: Sign plugin (SignPath)
         if: startsWith(github.ref, 'refs/tags/v') && vars.SIGNPATH_ORGANIZATION_ID != ''
         uses: signpath/github-action-submit-signing-request@v1
         with:
@@ -41,9 +43,40 @@ jobs:
           organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
           project-slug: synergy-occ-tablet
           signing-policy-slug: release-signing
-          github-artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
+          artifact-configuration-slug: plugin
+          github-artifact-id: ${{ steps.upload-plugin.outputs.artifact-id }}
+          wait-for-completion: true
+          output-artifact-directory: plugin
+
+      - name: Build app
+        run: ./build.sh app
+
+      - name: Upload unsigned app
+        id: upload-app
+        uses: actions/upload-artifact@v4
+        with:
+          name: SynergyTablet-unsigned
+          path: dist/SynergyTablet.exe
+
+      - name: Sign app (SignPath)
+        if: startsWith(github.ref, 'refs/tags/v') && vars.SIGNPATH_ORGANIZATION_ID != ''
+        uses: signpath/github-action-submit-signing-request@v1
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: synergy-occ-tablet
+          signing-policy-slug: release-signing
+          artifact-configuration-slug: app
+          github-artifact-id: ${{ steps.upload-app.outputs.artifact-id }}
           wait-for-completion: true
           output-artifact-directory: dist
+
+      - name: Check signatures
+        if: startsWith(github.ref, 'refs/tags/v') && vars.SIGNPATH_ORGANIZATION_ID != ''
+        run: |
+          sudo apt-get install -y osslsigncode
+          osslsigncode verify -in plugin/SynergyBridge.dll
+          osslsigncode verify -in dist/SynergyTablet.exe
 
       - name: Release
         if: startsWith(github.ref, 'refs/tags/v')

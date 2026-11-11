@@ -16,7 +16,7 @@
 - [ ] „Vzít drobné“ přes trigger pluginu místo simulace klávesy – potřeba název akce Shift+T z OMSI (Možnosti → Klávesnice); jestli je to vestavěná akce OMSI a ne trigger skriptu, přes plugin to nepůjde
 - [ ] Build přes MSVC místo mingw (méně falešných poplachů)
 - [ ] Linuxová verze (OMSI přes Proton/Wine)
-- [ ] Podpis přes SignPath (veřejný repozitář + GitHub Actions)
+- [ ] Podpis přes SignPath (veřejný repozitář + GitHub Actions) – workflow připravený (podpis pluginu i exe), čeká na schválení SignPath a nastavení tokenu
 
 ## Nápady (zatím ne)
 - [ ] „Vzít drobné“: před stiskem přepnout na okno OMSI, upozornit na hru spuštěnou jako správce, ukázat cílové okno stisku. (Případ 7. 11. vyřešil restart PC.)

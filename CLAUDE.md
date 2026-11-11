@@ -71,6 +71,9 @@ OMSI 2 ─ plugin/SynergyBridge.dll ─UDP─ app/SynergyTablet.exe ─HTTP :876
 - `./build.sh` (Linux/WSL, `mingw-w64`) → `dist/SynergyTablet.exe`. CI: `.github/workflows/build.yml` (Ubuntu 24.04).
 - Release: založit tag `v1.x` (nebo release v GitHub UI) → CI nahraje `SynergyTablet_v1.x.zip`.
 - Podpis: SignPath Foundation – krok ve workflow se zapne po nastavení `SIGNPATH_API_TOKEN` (secret) a `SIGNPATH_ORGANIZATION_ID` (variable).
+  Podepisuje se nejdřív plugin (artifact configuration `plugin`), ten se vloží do exe a pak se podepíše exe (`app`).
+  Konfigurace pro SignPath jsou v `docs/signpath/`. Podepsaný plugin má jiné bajty → aplikace u uživatelů hlásí starý plugin
+  (porovnává bajty), takže první podepsaná verze = přeinstalovat plugin + restart OMSI.
 - Bez OMSI: spusť exe a `python tools/sim.py main|turnus|menu|cinnost|sporic|manual` – posílá falešný stav na UDP 38600.
 
 ## Známé problémy u uživatelů
